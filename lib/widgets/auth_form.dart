@@ -1,11 +1,41 @@
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatefulWidget {
+  AuthForm(this.submitFn);
+
+  final void Function(
+    String email,
+    String password,
+    String username,
+    bool isLogin,
+  ) submitFn;
+
   @override
   _AuthFormState createState() => _AuthFormState();
 }
 
 class _AuthFormState extends State<AuthForm> {
+  final _formKey = GlobalKey<FormState>();
+  var _isLogin = true;
+  var _userEmail = "";
+  var _userName = "";
+  var _userPassword = "";
+
+  void _trySumit() {
+    final isValid = _formKey.currentState.validate();
+    FocusScope.of(context).unfocus();
+
+    if (isValid) {
+      _formKey.currentState.save();
+      widget.submitFn(
+        _userEmail,
+        _userPassword,
+        _userName,
+        _isLogin,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -15,30 +45,71 @@ class _AuthFormState extends State<AuthForm> {
           child: Padding(
               padding: EdgeInsets.all(16),
               child: Form(
+                key: _formKey,
                 child:
                     Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
                   TextFormField(
+                    key: ValueKey("email"),
+                    validator: (value) {
+                      if (value.isEmpty || !value.contains("@")) {
+                        return "please enter valid email address";
+                      }
+                      return null;
+                    },
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(labelText: "Email address"),
+                    decoration: InputDecoration(
+                      labelText: "Email address",
+                    ),
+                    onSaved: (value) {
+                      _userEmail = value;
+                    },
                   ),
+                  if (!_isLogin)
+                    TextFormField(
+                      key: ValueKey("user"),
+                      validator: (value) {
+                        if (value.isEmpty || value.length < 4) {
+                          return "enter your name please ";
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(labelText: "User Name"),
+                      onSaved: (value) {
+                        _userName = value;
+                      },
+                    ),
                   TextFormField(
-                    decoration: InputDecoration(labelText: "User Name"),
-                  ),
-                  TextFormField(
+                    key: ValueKey("Password"),
+                    validator: (value) {
+                      if (value.isEmpty || value.length < 7) {
+                        return "enter more than 7 characters please ";
+                      }
+                      return null;
+                    },
                     decoration: InputDecoration(labelText: "Password"),
                     obscureText: true,
+                    onSaved: (value) {
+                      _userPassword = value;
+                    },
                   ),
                   SizedBox(
                     height: 12,
                   ),
-                  ElevatedButton(child: Text("Login"), onPressed: () {}),
+                  ElevatedButton(
+                    child: Text(_isLogin ? "Login" : "Signup"),
+                    onPressed: _trySumit,
+                  ),
                   TextButton(
                     style: TextButton.styleFrom(
                         primary: Theme.of(context).primaryColor),
-                    child: Text(
-                      "Creat new account",
-                    ),
-                    onPressed: () {},
+                    child: Text(_isLogin
+                        ? "Creat new account"
+                        : "I already have an account"),
+                    onPressed: () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                      });
+                    },
                   )
                 ]),
               )),
