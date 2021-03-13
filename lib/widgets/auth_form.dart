@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatefulWidget {
-  AuthForm(this.submitFn);
-
+  AuthForm(
+    this.submitFn,
+    this.isLoading,
+  );
+  final bool isLoading;
   final void Function(
     String email,
     String password,
@@ -71,7 +74,7 @@ class _AuthFormState extends State<AuthForm> {
                       key: ValueKey("user"),
                       validator: (value) {
                         if (value.isEmpty || value.length < 4) {
-                          return "enter your name please ";
+                          return "Please enter at least 4 characters ";
                         }
                         return null;
                       },
@@ -84,7 +87,7 @@ class _AuthFormState extends State<AuthForm> {
                     key: ValueKey("Password"),
                     validator: (value) {
                       if (value.isEmpty || value.length < 7) {
-                        return "enter more than 7 characters please ";
+                        return "Password must be at least 7 characters long.";
                       }
                       return null;
                     },
@@ -94,25 +97,26 @@ class _AuthFormState extends State<AuthForm> {
                       _userPassword = value;
                     },
                   ),
-                  SizedBox(
-                    height: 12,
-                  ),
-                  ElevatedButton(
-                    child: Text(_isLogin ? "Login" : "Signup"),
-                    onPressed: _trySumit,
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                        primary: Theme.of(context).primaryColor),
-                    child: Text(_isLogin
-                        ? "Creat new account"
-                        : "I already have an account"),
-                    onPressed: () {
-                      setState(() {
-                        _isLogin = !_isLogin;
-                      });
-                    },
-                  )
+                  SizedBox(height: 12),
+                  if (widget.isLoading) CircularProgressIndicator(),
+                  if (!widget.isLoading)
+                    ElevatedButton(
+                      child: Text(_isLogin ? "Login" : "Signup"),
+                      onPressed: _trySumit,
+                    ),
+                  if (!widget.isLoading)
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          primary: Theme.of(context).primaryColor),
+                      child: Text(_isLogin
+                          ? "Creat new account"
+                          : "I already have an account"),
+                      onPressed: () {
+                        setState(() {
+                          _isLogin = !_isLogin;
+                        });
+                      },
+                    )
                 ]),
               )),
         ),
